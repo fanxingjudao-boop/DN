@@ -41,6 +41,8 @@ export default function App(){
             >
               <option value="normal">Normal</option>
               <option value="incident">Ransomware Incident</option>
+              <option value="infostealer">情報窃取（静かに進行）</option>
+              <option value="vendor">委託先起点（サプライチェーン）</option>
             </select>
           </div>
           {banner.kind === 'incident' && (

@@ -1,0 +1,230 @@
+{
+  "kpi": {
+    "ship": "97.2%",
+    "order_delay": "4.8%",
+    "alerts": "高（委託先/VPN）"
+  },
+  "alerts": [
+    {
+      "id": "a-v-1",
+      "title": "委託先VPNアカウントで深夜ログイン",
+      "severity": "high",
+      "tags": [
+        "vpn",
+        "vendor",
+        "identity"
+      ],
+      "summary": "通常運用外の時間帯にログイン。"
+    },
+    {
+      "id": "a-v-2",
+      "title": "管理ツール利用の急増（RMM）",
+      "severity": "critical",
+      "tags": [
+        "admin-tool",
+        "lateral-movement"
+      ],
+      "summary": "複数端末に対する一括操作痕跡。"
+    },
+    {
+      "id": "a-v-3",
+      "title": "バックアップ領域への不審アクセス",
+      "severity": "critical",
+      "tags": [
+        "backup",
+        "tamper"
+      ],
+      "summary": "削除/上書きに繋がる操作の疑い。"
+    }
+  ],
+  "incidents": [
+    {
+      "id": "inc-vendor-1",
+      "title": "委託先起点の侵害からランサムへ発展（想定）",
+      "severity": "critical",
+      "summary": "委託先の接続経路（VPN/RMM）を足がかりに内部へ横展開し、暗号化に至る想定シナリオ（デモ）。",
+      "tags": [
+        "vendor",
+        "vpn",
+        "rmm",
+        "ransomware",
+        "backup"
+      ],
+      "updated": "2026-02-02 19:45",
+      "timeline": [
+        {
+          "t": "T0",
+          "event": "委託先VPNで不審ログイン",
+          "note": "本人確認未実施の想定"
+        },
+        {
+          "t": "T+3h",
+          "event": "管理ツール（RMM）で複数端末操作",
+          "note": "正規ツールの悪用は見分けづらい"
+        },
+        {
+          "t": "T+6h",
+          "event": "AD/共有への権限探索の疑い",
+          "note": "最短で“核”に寄ってくる"
+        },
+        {
+          "t": "T+10h",
+          "event": "バックアップ領域へのアクセス異常",
+          "note": "復旧手段を潰しに来る"
+        },
+        {
+          "t": "T+14h",
+          "event": "ファイルサーバ暗号化兆候",
+          "note": "業務影響が急拡大"
+        },
+        {
+          "t": "T+1d",
+          "event": "受注/出荷が部分停止",
+          "note": "優先復旧の意思決定が必要"
+        }
+      ],
+      "related_assets": [
+        "as-v-1",
+        "as-v-2",
+        "as-v-3"
+      ],
+      "recommended_playbooks": [
+        "pb-v-1",
+        "pb-v-2"
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "id": "as-v-1",
+      "name": "VPN-GW-01",
+      "type": "network",
+      "criticality": "high",
+      "tags": [
+        "vpn"
+      ],
+      "summary": "委託先接続ゲートウェイ。例外・共有アカウントがあると地獄。",
+      "incident_flags": [
+        "委託先アカウント棚卸し",
+        "MFA必須化"
+      ]
+    },
+    {
+      "id": "as-v-2",
+      "name": "RMM-CONSOLE",
+      "type": "admin",
+      "criticality": "high",
+      "tags": [
+        "admin-tool",
+        "rmm"
+      ],
+      "summary": "リモート管理ツール（正規）。悪用されると横展開が速い。",
+      "incident_flags": [
+        "利用ログ保全",
+        "一時停止判断"
+      ]
+    },
+    {
+      "id": "as-v-3",
+      "name": "BACKUP-VAULT",
+      "type": "storage",
+      "criticality": "high",
+      "tags": [
+        "backup"
+      ],
+      "summary": "バックアップ保管領域。削除権限の分離が生命線。",
+      "incident_flags": [
+        "隔離済み(想定)",
+        "削除権限見直し"
+      ]
+    }
+  ],
+  "knowledge": [
+    {
+      "id": "k-v-1",
+      "title": "委託先起点事故の落とし穴",
+      "tags": [
+        "knowledge",
+        "vendor"
+      ],
+      "summary": "自社が真面目でも燃える。",
+      "body": "委託先の端末・ID・VPN経路が侵害されると、内部では『正規アクセス』として扱われがち。\\n対策の要点: 1) 委託先IDの最小権限 2) MFA必須 3) 接続元制限 4) 作業時間帯の制約 5) 監査ログの定期レビュー。"
+    },
+    {
+      "id": "k-v-2",
+      "title": "バックアップが狙われる理由",
+      "tags": [
+        "knowledge",
+        "backup",
+        "ransomware"
+      ],
+      "summary": "復旧手段を先に潰される。",
+      "body": "暗号化前にバックアップ削除・スナップショット破壊が行われる想定。\\n『隔離』『削除権限の分離』『復旧演習』が揃って初めて“使えるバックアップ”。"
+    }
+  ],
+  "playbooks": [
+    {
+      "id": "pb-v-1",
+      "title": "封じ込め: 委託先経路",
+      "phase": "containment",
+      "tags": [
+        "vendor",
+        "vpn"
+      ],
+      "steps": [
+        {
+          "id": "v1",
+          "text": "委託先アカウントを一時停止（デモでは状態更新のみ）"
+        },
+        {
+          "id": "v2",
+          "text": "VPNの接続元制限を厳格化（許可IP/時間帯）"
+        },
+        {
+          "id": "v3",
+          "text": "委託先作業の申請・承認フローを緊急モードへ切替"
+        },
+        {
+          "id": "v4",
+          "text": "RMMの利用停止/制限を判断し、監査ログを保全"
+        }
+      ]
+    },
+    {
+      "id": "pb-v-2",
+      "title": "復旧: 優先順位と判断ログ",
+      "phase": "recovery",
+      "tags": [
+        "recovery",
+        "business-impact"
+      ],
+      "steps": [
+        {
+          "id": "r1",
+          "text": "影響サービスを“売上/安全/法令”で優先度付け（意思決定ログに残す）"
+        },
+        {
+          "id": "r2",
+          "text": "復旧手順は“検証→段階復旧→監視強化”で進める"
+        },
+        {
+          "id": "r3",
+          "text": "バックアップからの復元前に“残存侵害”の確認を行う（デモ説明用）"
+        }
+      ]
+    }
+  ],
+  "comms": [
+    {
+      "id": "c-v-1",
+      "title": "社内: 委託先接続の一時停止通達",
+      "tags": [
+        "comms",
+        "internal",
+        "vendor"
+      ],
+      "summary": "経路遮断と作業指示。",
+      "body": "委託先経由の侵害の可能性があるため、当面の間、委託先VPN/RMM接続を停止します。例外対応は司令室承認が必要です。現場判断での復旧作業は禁止。"
+    }
+  ]
+}

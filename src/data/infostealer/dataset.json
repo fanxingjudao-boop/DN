@@ -1,0 +1,232 @@
+{
+  "kpi": {
+    "ship": "99.4%",
+    "order_delay": "0.6%",
+    "alerts": "注意（認証/クラウド）"
+  },
+  "alerts": [
+    {
+      "id": "a-s-1",
+      "title": "SaaS への異常ログイン（新規国/端末）",
+      "severity": "high",
+      "tags": [
+        "saas",
+        "identity",
+        "infostealer"
+      ],
+      "summary": "通常使わない端末指紋でのログインを検知。"
+    },
+    {
+      "id": "a-s-2",
+      "title": "メール転送ルールの不審変更",
+      "severity": "high",
+      "tags": [
+        "mail",
+        "exfiltration",
+        "infostealer"
+      ],
+      "summary": "外部アドレスへの自動転送ルールが追加された可能性。"
+    },
+    {
+      "id": "a-s-3",
+      "title": "クラウドストレージ大量ダウンロード",
+      "severity": "critical",
+      "tags": [
+        "cloud-storage",
+        "exfiltration"
+      ],
+      "summary": "短時間に大量のファイル取得。情報持ち出し疑い。"
+    }
+  ],
+  "incidents": [
+    {
+      "id": "inc-steal-1",
+      "title": "情報窃取（インフォスティーラー）疑い",
+      "severity": "critical",
+      "summary": "端末症状が薄いまま、認証情報とSaaSデータが持ち出される想定シナリオ（デモ）。",
+      "tags": [
+        "infostealer",
+        "saas",
+        "identity",
+        "exfiltration"
+      ],
+      "updated": "2026-02-02 19:40",
+      "timeline": [
+        {
+          "t": "T0",
+          "event": "ユーザ端末で不審な添付ファイル開封（想定）",
+          "note": "体感症状はほぼ無し"
+        },
+        {
+          "t": "T+2h",
+          "event": "ブラウザ/パスワード管理から認証情報流出の疑い",
+          "note": "MFAが無い/例外があると致命的"
+        },
+        {
+          "t": "T+6h",
+          "event": "SaaSへ異常ログイン（新規端末指紋）",
+          "note": "地理・端末・時間帯の不一致"
+        },
+        {
+          "t": "T+10h",
+          "event": "メール転送ルール改変の疑い",
+          "note": "社外への情報流出が継続"
+        },
+        {
+          "t": "T+18h",
+          "event": "クラウドストレージから大量取得",
+          "note": "二次被害（なりすまし/詐欺）の土台"
+        },
+        {
+          "t": "T+2d",
+          "event": "取引先になりすました請求書/連絡リスクが顕在化",
+          "note": "対外対応が必要に"
+        }
+      ],
+      "related_assets": [
+        "as-s-1",
+        "as-s-2",
+        "as-s-3"
+      ],
+      "recommended_playbooks": [
+        "pb-id-1",
+        "pb-comms-1"
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "id": "as-s-1",
+      "name": "USER-PC-113",
+      "type": "endpoint",
+      "criticality": "medium",
+      "tags": [
+        "endpoint",
+        "browser"
+      ],
+      "summary": "感染起点疑い。症状は軽微でも資格情報が危険。",
+      "incident_flags": [
+        "隔離判断待ち",
+        "認証情報漏えい疑い"
+      ]
+    },
+    {
+      "id": "as-s-2",
+      "name": "IDP-01",
+      "type": "identity",
+      "criticality": "high",
+      "tags": [
+        "identity",
+        "mfa"
+      ],
+      "summary": "SSO/ID基盤。ログイン異常検知が鍵。",
+      "incident_flags": [
+        "MFA例外確認",
+        "リスクベース認証強化"
+      ]
+    },
+    {
+      "id": "as-s-3",
+      "name": "CLOUD-DRIVE",
+      "type": "saas",
+      "criticality": "high",
+      "tags": [
+        "cloud-storage",
+        "saas"
+      ],
+      "summary": "クラウドストレージ。大量ダウンロードの監査が必要。",
+      "incident_flags": [
+        "大量取得検知",
+        "共有リンク棚卸し"
+      ]
+    }
+  ],
+  "knowledge": [
+    {
+      "id": "k-s-1",
+      "title": "症状が薄い情報窃取の特徴（時間経過）",
+      "tags": [
+        "knowledge",
+        "infostealer"
+      ],
+      "summary": "暗号化が無くても事故は進む。",
+      "body": "0〜数時間: 体感症状ほぼ無し\\n数時間〜1日: 異常ログイン/メールルール改変/トークン再発行が起きる\\n数日: SaaSからの持ち出し・なりすまし準備\\n数週間: 取引先詐欺・内部不正の形で表面化\\n\\nポイント: 端末だけ見ても分からない。ID・SaaS監査が主戦場。"
+    },
+    {
+      "id": "k-s-2",
+      "title": "初動の優先順位（情報窃取）",
+      "tags": [
+        "knowledge",
+        "playbook"
+      ],
+      "summary": "止血はIDから。",
+      "body": "1) セッション/トークン失効（全体または対象ユーザ）\\n2) 重要アカウントの強制リセットとMFA再登録\\n3) メール転送/委任/共有リンクの棚卸し\\n4) 取引先向け注意喚起（なりすまし対策）\\n5) 端末フォレンジックは“次”だが、隔離は早めに。"
+    }
+  ],
+  "playbooks": [
+    {
+      "id": "pb-id-1",
+      "title": "封じ込め: ID/トークン起点",
+      "phase": "containment",
+      "tags": [
+        "identity",
+        "saas",
+        "infostealer"
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "text": "対象ユーザのセッションを強制失効（デモではフラグ更新のみ）"
+        },
+        {
+          "id": "s2",
+          "text": "重要アカウントのパスワード変更・MFA再登録（例外も棚卸し）"
+        },
+        {
+          "id": "s3",
+          "text": "メール転送/委任/共有リンクを停止・監査ログを保存"
+        },
+        {
+          "id": "s4",
+          "text": "SaaSの管理者権限とAPIトークンを棚卸し"
+        }
+      ]
+    },
+    {
+      "id": "pb-comms-1",
+      "title": "対外: なりすまし注意喚起（テンプレ）",
+      "phase": "communications",
+      "tags": [
+        "comms",
+        "vendor",
+        "infostealer"
+      ],
+      "steps": [
+        {
+          "id": "c1",
+          "text": "取引先へ『請求書/振込先変更の真偽確認』を依頼する文面を準備"
+        },
+        {
+          "id": "c2",
+          "text": "社内へ『不審連絡の二重確認』を周知（電話/別経路）"
+        },
+        {
+          "id": "c3",
+          "text": "広報・法務・営業の連携窓口を固定化"
+        }
+      ]
+    }
+  ],
+  "comms": [
+    {
+      "id": "c-s-1",
+      "title": "社内: なりすまし警戒の周知",
+      "tags": [
+        "comms",
+        "internal"
+      ],
+      "summary": "詐欺を防ぐための行動指針。",
+      "body": "現在、外部へのなりすまし連絡が発生する可能性があります。『振込先変更』『緊急の支払い依頼』等は必ず別経路で真偽確認してください。メール転送設定の変更等を発見した場合は即時連絡。"
+    }
+  ]
+}
