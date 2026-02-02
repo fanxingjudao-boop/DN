@@ -1,0 +1,240 @@
+{
+  "kpi": {
+    "ship": "停止",
+    "order_delay": "38%",
+    "alerts": "危険水準"
+  },
+  "alerts": [
+    {
+      "id": "a-i-1",
+      "title": "大量ファイル変更検知",
+      "severity": "critical",
+      "tags": [
+        "ransomware",
+        "file-server"
+      ],
+      "summary": "短時間に多数のファイル書換えを検知。暗号化の疑い。"
+    },
+    {
+      "id": "a-i-2",
+      "title": "バックアップ領域への異常アクセス",
+      "severity": "critical",
+      "tags": [
+        "backup",
+        "privilege"
+      ],
+      "summary": "通常経路ではない特権アカウントがバックアップ領域へアクセス。"
+    },
+    {
+      "id": "a-i-3",
+      "title": "特権権限の変更",
+      "severity": "high",
+      "tags": [
+        "ad",
+        "privilege"
+      ],
+      "summary": "深夜帯に管理者グループへの追加が発生。"
+    }
+  ],
+  "incidents": [
+    {
+      "id": "inc-i-1",
+      "title": "ランサムウェア疑い: 出荷・受注停止",
+      "severity": "critical",
+      "summary": "ファイル共有・業務連携に広範囲の障害。暗号化兆候と情報持ち出し懸念。",
+      "tags": [
+        "ransomware",
+        "ship",
+        "order",
+        "file-server"
+      ],
+      "updated": "2026-02-02",
+      "timeline": [
+        {
+          "t": "T0",
+          "what": "不審ログイン検知（深夜）",
+          "symptom": "本人利用ではない可能性。",
+          "hint": "認証ログ/端末の特定"
+        },
+        {
+          "t": "T+2h",
+          "what": "特権権限変更",
+          "symptom": "管理者グループに追加。",
+          "hint": "承認記録の有無確認"
+        },
+        {
+          "t": "T+6h",
+          "what": "共有フォルダ大量アクセス",
+          "symptom": "アクセスが重くなる。",
+          "hint": "対象サーバとアカウント"
+        },
+        {
+          "t": "T+10h",
+          "what": "バックアップ失敗/異常アクセス",
+          "symptom": "復旧手段が危うい。",
+          "hint": "バックアップ隔離の確認"
+        },
+        {
+          "t": "T+12h",
+          "what": "暗号化兆候",
+          "symptom": "ファイルが開けない/拡張子変化。",
+          "hint": "影響範囲の確定"
+        },
+        {
+          "t": "T+18h",
+          "what": "業務停止ピーク",
+          "symptom": "出荷/受注停止。",
+          "hint": "優先復旧順位の決定"
+        }
+      ],
+      "related_assets": [
+        "as-1",
+        "as-2",
+        "as-3"
+      ],
+      "recommended_playbooks": [
+        "pb-i-1",
+        "pb-i-2"
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "id": "as-1",
+      "name": "FILE-SRV-01",
+      "type": "server",
+      "criticality": "high",
+      "tags": [
+        "file-server"
+      ],
+      "summary": "共有フォルダ。暗号化影響が最も疑われる。",
+      "incident_flags": [
+        "隔離判断待ち",
+        "暗号化兆候"
+      ]
+    },
+    {
+      "id": "as-2",
+      "name": "AD-DC-01",
+      "type": "server",
+      "criticality": "high",
+      "tags": [
+        "ad",
+        "id"
+      ],
+      "summary": "権限変更の中心。横展開の要所。",
+      "incident_flags": [
+        "特権変更検知"
+      ]
+    },
+    {
+      "id": "as-3",
+      "name": "BKUP-01",
+      "type": "server",
+      "criticality": "high",
+      "tags": [
+        "backup"
+      ],
+      "summary": "バックアップ保管。アクセス経路の確認必須。",
+      "incident_flags": [
+        "異常アクセス検知"
+      ]
+    }
+  ],
+  "knowledge": [
+    {
+      "id": "k-i-1",
+      "title": "ランサム疑い 初動（やること）",
+      "tags": [
+        "ransomware",
+        "containment"
+      ],
+      "summary": "封じ込め・証拠保全・影響範囲確定。",
+      "body": "優先順位: 1) 追加被害防止（隔離/認証停止） 2) 証拠保全（ログ/メモ） 3) 影響範囲の確定（資産/依存関係） 4) 復旧の優先順位決定。"
+    },
+    {
+      "id": "k-i-2",
+      "title": "症状の時間経過（教材）",
+      "tags": [
+        "education",
+        "ransomware"
+      ],
+      "summary": "0h〜数日で何が起きるか。",
+      "body": "0〜数時間: 負荷上昇/共有遅延。数時間〜1日: ファイルが開けない。1〜3日: 出荷/受注停止が顕在化。以降: 対外説明と再発防止が長期化。"
+    },
+    {
+      "id": "k-i-3",
+      "title": "顧客向け第一報テンプレ（案）",
+      "tags": [
+        "comms",
+        "external"
+      ],
+      "summary": "事実と次報予告のみ。",
+      "body": "現在、当社システムに障害が発生しており調査・復旧を進めています。影響範囲の確認中で、判明次第あらためてご案内します。"
+    }
+  ],
+  "playbooks": [
+    {
+      "id": "pb-i-1",
+      "title": "封じ込め: 初動で止血する",
+      "phase": "contain",
+      "tags": [
+        "ransomware",
+        "containment"
+      ],
+      "steps": [
+        {
+          "id": "c1",
+          "text": "影響が疑われる端末/サーバのネットワーク隔離（デモではフラグ更新のみ）"
+        },
+        {
+          "id": "c2",
+          "text": "不審アカウントの停止・強制パスワードリセット（承認ログを残す）"
+        },
+        {
+          "id": "c3",
+          "text": "共有フォルダの書込制限（読み取りのみなど）"
+        },
+        {
+          "id": "c4",
+          "text": "バックアップ領域の隔離状態を再確認（削除/上書きが起きていないか）"
+        }
+      ]
+    },
+    {
+      "id": "pb-i-2",
+      "title": "証拠保全: 後から泣かないために",
+      "phase": "preserve",
+      "tags": [
+        "forensics",
+        "logs"
+      ],
+      "steps": [
+        {
+          "id": "p1",
+          "text": "認証ログ・権限変更ログ・ファイルアクセスログの保存"
+        },
+        {
+          "id": "p2",
+          "text": "意思決定ログ（誰が何を判断したか）を時系列で記録"
+        },
+        {
+          "id": "p3",
+          "text": "外部連絡（法務/広報/取引先）のログを残す"
+        }
+      ]
+    }
+  ],
+  "comms": [
+    {
+      "id": "c-i-1",
+      "title": "社内: 重大インシデント通達",
+      "tags": [
+        "comms",
+        "internal"
+      ],
+      "summary": "現状と禁止事項。",
+      "body": "重大インシデント対応中。関係者は指示があるまで対象端末の再起動や復旧作業を行わないでください。追加情報は司令室から通知します。"
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "kpi": {
+    "ship": "99.7%",
+    "order_delay": "0.1%",
+    "alerts": "平常帯"
+  },
+  "alerts": [
+    {
+      "id": "a-n-1",
+      "title": "証明書期限（30日以内）",
+      "severity": "medium",
+      "tags": [
+        "cert",
+        "infra"
+      ],
+      "summary": "社内ポータルの証明書更新を計画停止で実施予定。"
+    },
+    {
+      "id": "a-n-2",
+      "title": "バックアップ結果: 成功",
+      "severity": "low",
+      "tags": [
+        "backup"
+      ],
+      "summary": "前日分フルバックアップ完了。差分バックアップも正常。"
+    }
+  ],
+  "incidents": [
+    {
+      "id": "inc-n-1",
+      "title": "ファイル共有の一時遅延",
+      "severity": "medium",
+      "summary": "一部部署でアクセス遅延。ストレージIOの一過性上昇。",
+      "tags": [
+        "file-server",
+        "storage"
+      ],
+      "updated": "2026-02-01"
+    }
+  ],
+  "assets": [
+    {
+      "id": "as-1",
+      "name": "FILE-SRV-01",
+      "type": "server",
+      "criticality": "high",
+      "tags": [
+        "file-server"
+      ],
+      "summary": "部署共有フォルダを提供。"
+    },
+    {
+      "id": "as-2",
+      "name": "AD-DC-01",
+      "type": "server",
+      "criticality": "high",
+      "tags": [
+        "ad",
+        "id"
+      ],
+      "summary": "Active Directory ドメインコントローラ。"
+    },
+    {
+      "id": "as-3",
+      "name": "BKUP-01",
+      "type": "server",
+      "criticality": "high",
+      "tags": [
+        "backup"
+      ],
+      "summary": "バックアップ保管サーバ（隔離運用）。"
+    }
+  ],
+  "knowledge": [
+    {
+      "id": "k-n-1",
+      "title": "平常時のバックアップ点検",
+      "tags": [
+        "backup",
+        "operation"
+      ],
+      "summary": "成功/失敗の確認、復元テスト、隔離確認。",
+      "body": "毎朝の点検項目: 1) 前日分の成功確認 2) 復元テスト（週次） 3) 隔離領域への書込禁止確認。"
+    },
+    {
+      "id": "k-n-2",
+      "title": "変更管理テンプレ（計画停止）",
+      "tags": [
+        "change",
+        "itil"
+      ],
+      "summary": "影響範囲、ロールバック、周知テンプレ。",
+      "body": "計画停止は影響範囲、代替手順、ロールバックを必ず記載。"
+    }
+  ],
+  "playbooks": [
+    {
+      "id": "pb-0",
+      "title": "平常時: 異常ログインの一次対応",
+      "phase": "detect",
+      "tags": [
+        "auth",
+        "siem"
+      ],
+      "steps": [
+        {
+          "id": "s1",
+          "text": "対象アカウントの本人確認（申請/予定作業の有無）"
+        },
+        {
+          "id": "s2",
+          "text": "認証ログの時間帯・IP・端末の整合性確認"
+        },
+        {
+          "id": "s3",
+          "text": "必要ならパスワードリセット/MFA再登録（承認付き）"
+        }
+      ]
+    }
+  ],
+  "comms": [
+    {
+      "id": "c-n-1",
+      "title": "社内: 軽微障害通知テンプレ",
+      "tags": [
+        "comms"
+      ],
+      "summary": "影響が小さい場合の通知。",
+      "body": "現在、一部で遅延が発生しています。調査中であり、影響範囲は限定的です。"
+    }
+  ]
+}
